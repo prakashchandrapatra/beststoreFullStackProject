@@ -20,7 +20,7 @@ public class Video {
   private String category;//phone, Laptop, watch
   
   @Lob
-  @Column(columnDefinition = "LONGBLOB")
+  @Column(name = "video_data" ,columnDefinition = "LONGBLOB")
   private byte[] videoData;
   
   public Video() {}

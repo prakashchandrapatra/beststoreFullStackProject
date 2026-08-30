@@ -11,9 +11,9 @@ public interface VideoRepository extends JpaRepository<Video, Long>{
  
  List<Video> findByCategoryIgnoreCaseOrderByIdAsc(String category);
 
- Optional<Video> findFirstByCategoryIgnoreCaseOrderByIdDesc(String category);
+// Optional<Video> findFirstByCategoryIgnoreCaseOrderByIdDesc(String category);
 
- Optional<Video> findById(Long id);
-
- void deleteById(Long id);
+// Optional<Video> findById(Long id);
+//
+// void deleteById(Long id);
 }

@@ -20,7 +20,7 @@ import com.example.beststore.service.VideoService;
 
 @RestController
 @RequestMapping("/api/videos")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {"http://localhost:5173","https://silly-alfajores-437c90.netlify.app/"})
 public class VideoController {
    
 	private final VideoService videoService;
@@ -48,8 +48,8 @@ public class VideoController {
         List<Video> videos = videoService.getVideosByCategory(category);
 
         // Remove binary data before sending JSON
-
-        return ResponseEntity.ok(videos);
+       videos.forEach(video -> video.setVideoData(null));
+       return ResponseEntity.ok(videos);
     }
 
 
@@ -61,11 +61,18 @@ public class VideoController {
             @PathVariable Long id) {
 
         Video video = videoService.getVideo(id);
+        
+        String contentType = video.getContentType();
+        
+        if(contentType == null || contentType.isBlank()) {
+        	contentType = "video/mp4";
+        }
 
         return ResponseEntity.ok()
                 .contentType(
                         MediaType.parseMediaType(
-                                video.getContentType()
+//                                video.getContentType()
+                        		contentType
                         )
                 )
                 .header(
