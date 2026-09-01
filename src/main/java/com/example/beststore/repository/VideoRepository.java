@@ -1,19 +1,30 @@
 package com.example.beststore.repository;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.example.beststore.models.Video;
+import com.example.beststore.models.VideoMetadata;
 
-public interface VideoRepository extends JpaRepository<Video, Long>{
- 
- List<Video> findByCategoryIgnoreCaseOrderByIdAsc(String category);
+public interface VideoRepository extends JpaRepository<Video, Long> {
 
-// Optional<Video> findFirstByCategoryIgnoreCaseOrderByIdDesc(String category);
+@Query("""
+    SELECT new com.example.beststore.models.VideoMetadata(
+        v.id,
+        v.name,
+        v.contentType,
+        v.category
+    )
+    FROM Video v
+    WHERE UPPER(v.category) = UPPER(:category)
+    ORDER BY v.id ASC
+""")
+List<VideoMetadata> findVideoMetadataByCategory(
+        @Param("category") String category
+);
 
-// Optional<Video> findById(Long id);
-//
-// void deleteById(Long id);
+
 }
