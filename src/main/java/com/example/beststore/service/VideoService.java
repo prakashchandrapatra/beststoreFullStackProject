@@ -141,19 +141,24 @@ public Video getVideo(Long id) {
 // Get Video Metadata By Category
 // ==========================================
 
-public List<VideoMetadata> getVideosByCategory(
-        String category
-) {
+public List<VideoMetadata> getVideosByCategory(String category) {
 
-    String normalizedCategory =
-            normalizeCategory(category);
+    String normalizedCategory = normalizeCategory(category);
 
-    return videoRepository
-            .findVideoMetadataByCategory(
+    List<Object[]> rows =
+            videoRepository.findVideoMetadataByCategory(
                     normalizedCategory
             );
-}
 
+    return rows.stream()
+            .map(row -> new VideoMetadata(
+                    ((Number) row[0]).longValue(),
+                    (String) row[1],
+                    (String) row[2],
+                    (String) row[3]
+            ))
+            .toList();
+}
 
 // ==========================================
 // Delete Video

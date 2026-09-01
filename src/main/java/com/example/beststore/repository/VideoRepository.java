@@ -11,20 +11,17 @@ import com.example.beststore.models.VideoMetadata;
 
 public interface VideoRepository extends JpaRepository<Video, Long> {
 
-@Query("""
-    SELECT new com.example.beststore.models.VideoMetadata(
-        v.id,
-        v.name,
-        v.contentType,
-        v.category
-    )
-    FROM Video v
-    WHERE UPPER(v.category) = UPPER(:category)
-    ORDER BY v.id ASC
-""")
-List<VideoMetadata> findVideoMetadataByCategory(
-        @Param("category") String category
-);
-
-
+    @Query(value = """
+        SELECT
+            id,
+            name,
+            content_type,
+            category
+        FROM videos
+        WHERE LOWER(category) = LOWER(:category)
+        ORDER BY id ASC
+        """, nativeQuery = true)
+    List<Object[]> findVideoMetadataByCategory(
+            @Param("category") String category
+    );
 }
