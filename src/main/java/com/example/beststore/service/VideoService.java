@@ -175,18 +175,18 @@ public void deleteVideo(Long id) {
 // Get All Videos
 // ==========================================
 
-public List<Video> getAllVideos() {
-
-    List<Video> videos =
-            videoRepository.findAll();
-
-    // Do not return binary data
-    videos.forEach(
-            video -> video.setVideoData(null)
-    );
-
-    return videos;
-}
+//public List<Video> getAllVideos() {
+//
+//    List<Video> videos =
+//            videoRepository.findAll();
+//
+//    // Do not return binary data
+//    videos.forEach(
+//            video -> video.setVideoData(null)
+//    );
+//
+//    return videos;
+//}
 
 
 }
