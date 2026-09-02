@@ -16,11 +16,10 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
             v.id,
             v.name,
             v.content_type,
-            v.category
-            v.storedFileName
-        FROM videos
+            v.category,
+        FROM videos v
         WHERE LOWER(v.category) = LOWER(:category)
-        ORDER BY id ASC
+        ORDER BY v.id ASC
         """, nativeQuery = true)
     List<Object[]> findVideoMetadataByCategory(
             @Param("category") String category

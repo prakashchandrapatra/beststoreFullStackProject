@@ -1,11 +1,15 @@
 package com.example.beststore.models;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "videos")
 public class Video {
 
     @Id
@@ -13,13 +17,15 @@ public class Video {
     private Long id;
 
     private String name;
-    private String contentType;
-    private String category;
-    private String storedFileName;
 
-    // ==========================================
-    // Getters / Setters
-    // ==========================================
+    @Column(name = "content_type")
+    private String contentType;
+
+    private String category;
+
+    @Lob
+    @Column(name = "video_data", columnDefinition = "LONGBLOB")
+    private byte[] videoData;
 
     public Long getId() {
         return id;
@@ -53,11 +59,11 @@ public class Video {
         this.category = category;
     }
 
-    public String getStoredFileName() {
-        return storedFileName;
+    public byte[] getVideoData() {
+        return videoData;
     }
 
-    public void setStoredFileName(String storedFileName) {
-        this.storedFileName = storedFileName;
+    public void setVideoData(byte[] videoData) {
+        this.videoData = videoData;
     }
 }

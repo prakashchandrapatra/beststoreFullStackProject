@@ -2,45 +2,44 @@ package com.example.beststore.models;
 
 public class VideoMetadata {
 
-private Long id;
-private String name;
-private String contentType;
-private String category;
-private String storedFileName;
+    private Long id;
+    private String name;
+    private String contentType;
+    private String category;
 
-public VideoMetadata(
-        Long id,
-        String name,
-        String contentType,
-        String category,
-        String storedFileName
-) {
-    this.id = id;
-    this.name = name;
-    this.contentType = contentType;
-    this.category = category;
-    this.storedFileName = storedFileName;
-}
+    // ==========================================
+    // Constructor
+    // ==========================================
 
-public Long getId() {
-    return id;
-}
+    public VideoMetadata(
+            Long id,
+            String name,
+            String contentType,
+            String category
+    ) {
+        this.id = id;
+        this.name = name;
+        this.contentType = contentType;
+        this.category = category;
+    }
 
-public String getName() {
-    return name;
-}
+    // ==========================================
+    // Getters
+    // ==========================================
 
-public String getContentType() {
-    return contentType;
-}
+    public Long getId() {
+        return id;
+    }
 
-public String getCategory() {
-    return category;
-}
+    public String getName() {
+        return name;
+    }
 
-public String getStoredFileName() {
-	// TODO Auto-generated method stub
-	return storedFileName;
-}
+    public String getContentType() {
+        return contentType;
+    }
 
+    public String getCategory() {
+        return category;
+    }
 }

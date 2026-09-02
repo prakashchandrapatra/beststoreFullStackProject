@@ -1,13 +1,8 @@
 package com.example.beststore.service;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,220 +13,184 @@ import com.example.beststore.repository.VideoRepository;
 @Service
 public class VideoService {
 
-private final VideoRepository videoRepository;
+    private final VideoRepository videoRepository;
 
-// Folder where video files are stored on disk.
-// Falls back to ./data/videos if not set in application.properties.
-@Value("${video.storage.dir:./data/videos}")
-private String videoStorageDir;
+    // ==========================================
+    // Constructor
+    // ==========================================
 
-// ==========================================
-// Constructor
-// ==========================================
-
-public VideoService(VideoRepository videoRepository) {
-    this.videoRepository = videoRepository;
-}
-
-
-// ==========================================
-// Normalize Category
-// ==========================================
-
-private String normalizeCategory(String category) {
-
-    if (category == null || category.trim().isEmpty()) {
-        return "other";
+    public VideoService(VideoRepository videoRepository) {
+        this.videoRepository = videoRepository;
     }
 
-    String key = category.trim().toLowerCase();
+    // ==========================================
+    // Normalize Category
+    // ==========================================
 
-    switch (key) {
+    private String normalizeCategory(String category) {
 
-        // COMPUTERS / LAPTOPS
-        case "computer":
-        case "computers":
-        case "laptop":
-        case "laptops":
-        case "notebook":
-        case "notebooks":
-        case "pc":
-            return "computers";
-
-
-        // PHONES
-        case "phone":
-        case "phones":
-        case "smartphone":
-        case "smartphones":
-        case "mobile":
-        case "mobiles":
-            return "phone";
-
-
-        // WATCHES
-        case "watch":
-        case "watches":
-        case "smartwatch":
-        case "smartwatches":
-            return "watch";
-
-
-        // OTHER
-        case "other":
+        if (category == null || category.trim().isEmpty()) {
             return "other";
+        }
 
+        String key = category.trim().toLowerCase();
 
-        default:
-            return key;
-    }
-}
+        switch (key) {
 
+            // COMPUTERS / LAPTOPS
+            case "computer":
+            case "computers":
+            case "laptop":
+            case "laptops":
+            case "notebook":
+            case "notebooks":
+            case "pc":
+                return "computers";
 
-// ==========================================
-// Upload Video (streams straight to disk, no full buffering)
-// ==========================================
+            // PHONES
+            case "phone":
+            case "phones":
+            case "smartphone":
+            case "smartphones":
+            case "mobile":
+            case "mobiles":
+                return "phone";
 
-public Video uploadVideo(
-        MultipartFile file,
-        String category
-) throws IOException {
+            // WATCHES
+            case "watch":
+            case "watches":
+            case "smartwatch":
+            case "smartwatches":
+                return "watch";
 
-    if (file == null || file.isEmpty()) {
-        throw new IOException("Video file is empty");
-    }
+            // OTHER
+            case "other":
+                return "other";
 
-    // Ensure the storage directory exists
-    Path storageDir = Paths.get(videoStorageDir);
-    if (!Files.exists(storageDir)) {
-        Files.createDirectories(storageDir);
-    }
-
-    // Build a unique on-disk filename to avoid collisions
-    String storedName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-    Path target = storageDir.resolve(storedName);
-
-    // Streams the upload straight to disk, no full in-memory buffering
-    file.transferTo(target);
-
-    Video video = new Video();
-
-    // File name
-    video.setName(
-            file.getOriginalFilename()
-    );
-
-    // Content type
-    String contentType = file.getContentType();
-
-    if (contentType == null || contentType.isBlank()) {
-        contentType = "video/mp4";
+            default:
+                return key;
+        }
     }
 
-    video.setContentType(contentType);
+    // ==========================================
+    // Upload Video
+    // Stores video directly in MySQL/Railway
+    // ==========================================
 
-    // Normalize category
-    video.setCategory(
-            normalizeCategory(category)
-    );
+    public Video uploadVideo(
+            MultipartFile file,
+            String category
+    ) throws IOException {
 
-    // Store only the on-disk filename, not the actual bytes
-    video.setStoredFileName(storedName);
+        if (file == null || file.isEmpty()) {
+            throw new IOException("Video file is empty");
+        }
 
-    return videoRepository.save(video);
-}
+        Video video = new Video();
 
+        // Original file name
+        video.setName(file.getOriginalFilename());
 
-// ==========================================
-// Get Video By ID (entity, used internally)
-// ==========================================
+        // Content type
+        String contentType = file.getContentType();
 
-public Video getVideo(Long id) {
+        if (contentType == null || contentType.isBlank()) {
+            contentType = "video/mp4";
+        }
 
-    return videoRepository
-            .findById(id)
-            .orElseThrow(
-                    () -> new RuntimeException(
-                            "Video not found with id: " + id
-                    )
-            );
-}
+        video.setContentType(contentType);
 
+        // Normalize category
+        video.setCategory(normalizeCategory(category));
 
-// ==========================================
-// Get Video Metadata By ID (used by streaming controller)
-// ==========================================
+        // Store actual video inside MySQL/Railway
+        video.setVideoData(file.getBytes());
 
-public VideoMetadata getVideoMeta(Long id) {
+        return videoRepository.save(video);
+    }
 
-    Video video = getVideo(id);
+    // ==========================================
+    // Get Video By ID
+    // ==========================================
 
-    return new VideoMetadata(
-            video.getId(),
-            video.getName(),
-            video.getContentType(),
-            video.getCategory(),
-            video.getStoredFileName()
-    );
-}
+    public Video getVideo(Long id) {
 
+        return videoRepository
+                .findById(id)
+                .orElseThrow(
+                        () -> new RuntimeException(
+                                "Video not found with id: " + id
+                        )
+                );
+    }
 
-// ==========================================
-// Get Video Metadata By Category
-// ==========================================
+    // ==========================================
+    // Get Video Metadata By ID
+    // ==========================================
 
-public List<VideoMetadata> getVideosByCategory(String category) {
+    public VideoMetadata getVideoMeta(Long id) {
 
-    String normalizedCategory = normalizeCategory(category);
+        Video video = getVideo(id);
 
-    List<Object[]> rows =
-            videoRepository.findVideoMetadataByCategory(
-                    normalizedCategory
-            );
+        return new VideoMetadata(
+                video.getId(),
+                video.getName(),
+                video.getContentType(),
+                video.getCategory()
+        );
+    }
 
-    return rows.stream()
-            .map(row -> new VideoMetadata(
-                    ((Number) row[0]).longValue(),
-                    (String) row[1],
-                    (String) row[2],
-                    (String) row[3],
-                    (String) row[4]
-            ))
-            .toList();
-}
+    // ==========================================
+    // Get Video Metadata By Category
+    // ==========================================
 
-// ==========================================
-// Delete Video (removes DB row + file on disk)
-// ==========================================
+    public List<VideoMetadata> getVideosByCategory(String category) {
 
-public void deleteVideo(Long id) throws IOException {
+        String normalizedCategory =
+                normalizeCategory(category);
 
-    Video video = getVideo(id);
+        List<Object[]> rows =
+                videoRepository.findVideoMetadataByCategory(
+                        normalizedCategory
+                );
 
-    Path target = Paths.get(videoStorageDir, video.getStoredFileName());
-    Files.deleteIfExists(target);
+        return rows.stream()
+                .map(row -> new VideoMetadata(
+                        ((Number) row[0]).longValue(),
+                        (String) row[1],
+                        (String) row[2],
+                        (String) row[3]
+                ))
+                .toList();
+    }
 
-    videoRepository.deleteById(id);
-}
+    // ==========================================
+    // Delete Video
+    // Deletes video from MySQL/Railway
+    // ==========================================
 
+    public void deleteVideo(Long id) {
 
-// ==========================================
-// Get All Videos
-// ==========================================
+        Video video = getVideo(id);
 
-//public List<Video> getAllVideos() {
-//
-//    List<Video> videos =
-//            videoRepository.findAll();
-//
-//    // Do not return binary data
-//    videos.forEach(
-//            video -> video.setVideoData(null)
-//    );
-//
-//    return videos;
-//}
+        videoRepository.delete(video);
+    }
 
+    // ==========================================
+    // Get All Videos
+    // ==========================================
 
+    public List<Video> getAllVideos() {
+
+        List<Video> videos =
+                videoRepository.findAll();
+
+        // Do not return binary video data in JSON
+        videos.forEach(
+                video -> video.setVideoData(null)
+        );
+
+        return videos;
+    }
 }
 
