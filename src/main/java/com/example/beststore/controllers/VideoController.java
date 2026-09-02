@@ -3,7 +3,7 @@ package com.example.beststore.controllers;
 import java.io.IOException;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Value;
+//import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -36,8 +36,8 @@ public class VideoController {
 
     // Falls back to ./data/videos if the property isn't set,
     // so a missing config value won't crash startup.
-    @Value("${video.storage.dir:./data/videos}")
-    private String videoStorageDir;
+//    @Value("${video.storage.dir:./data/videos}")
+//    private String videoStorageDir;
 
     // ==========================================
     // Constructor
