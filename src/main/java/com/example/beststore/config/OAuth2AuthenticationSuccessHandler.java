@@ -37,7 +37,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     	oauth2UserService.saveOrGetGoogleUser(email, name);
     	String token = jwtService.generateToken(email);
     	
-    	String redirectUrl = "http://localhost:5173/oauth-success"
+    	String redirectUrl = "https://silly-alfajores-437c90.netlify.app/oauth-success"
     			   + "?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8)
     			   + "&name=" + URLEncoder.encode(name, StandardCharsets.UTF_8)
     			   + "&email=" + URLEncoder.encode(email, StandardCharsets.UTF_8);
