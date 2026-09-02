@@ -1,13 +1,10 @@
 package com.example.beststore.controllers;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -92,24 +89,27 @@ public class VideoController {
     // ==========================================
 
     @GetMapping("/{id}")
-    public ResponseEntity<Resource> getVideo(@PathVariable Long id) throws IOException {
+    public ResponseEntity<Resource> getVideo(@PathVariable Long id) {
 
-        Video meta = videoService.getVideo(id);
+        Video video = videoService.getVideo(id);
 
-        Path path = Paths.get(videoStorageDir, meta.getStoredFileName());
+        if (video == null || video.getVideoData() == null) {
+            return ResponseEntity.notFound().build();
+        }
 
-        Resource resource = new UrlResource(path.toUri());
+        Resource resource =
+                new org.springframework.core.io.ByteArrayResource(video.getVideoData());
 
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(meta.getContentType()))
+                .contentType(MediaType.parseMediaType(video.getContentType()))
                 .header(
                         HttpHeaders.CONTENT_DISPOSITION,
-                        "inline; filename=\"" + meta.getName() + "\""
+                        "inline; filename=\"" + video.getName() + "\""
                 )
+                .contentLength(video.getVideoData().length)
                 .body(resource);
     }
-
-
+   
     // ==========================================
     // Delete Video
     // ==========================================

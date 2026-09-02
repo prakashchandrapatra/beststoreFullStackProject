@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.example.beststore.models.Video;
-import com.example.beststore.models.VideoMetadata;
 
 public interface VideoRepository extends JpaRepository<Video, Long> {
 
@@ -16,7 +15,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
             v.id,
             v.name,
             v.content_type,
-            v.category,
+            v.category
         FROM videos v
         WHERE LOWER(v.category) = LOWER(:category)
         ORDER BY v.id ASC
