@@ -146,24 +146,22 @@ public class VideoService {
 
     public List<VideoMetadata> getVideosByCategory(String category) {
 
-        String normalizedCategory =
-                normalizeCategory(category);
+        String normalizedCategory = normalizeCategory(category);
 
-        List<Object[]> rows =
-                videoRepository.findVideoMetadataByCategory(
+        List<Video> videos =
+                videoRepository.findByCategoryIgnoreCaseOrderByIdAsc(
                         normalizedCategory
                 );
 
-        return rows.stream()
-                .map(row -> new VideoMetadata(
-                        ((Number) row[0]).longValue(),
-                        (String) row[1],
-                        (String) row[2],
-                        (String) row[3]
+        return videos.stream()
+                .map(video -> new VideoMetadata(
+                        video.getId(),
+                        video.getName(),
+                        video.getContentType(),
+                        video.getCategory()
                 ))
                 .toList();
     }
-
     // ==========================================
     // Delete Video
     // Deletes video from MySQL/Railway
