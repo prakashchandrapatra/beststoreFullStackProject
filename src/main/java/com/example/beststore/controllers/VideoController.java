@@ -1,7 +1,13 @@
 package com.example.beststore.controllers;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,117 +28,102 @@ import com.example.beststore.service.VideoService;
 @RestController
 @RequestMapping("/api/videos")
 @CrossOrigin(
-origins = {
-"http://localhost:5173",
-"https://silly-alfajores-437c90.netlify.app"
-}
+    origins = {
+        "http://localhost:5173",
+        "https://silly-alfajores-437c90.netlify.app"
+    }
 )
 public class VideoController {
 
-private final VideoService videoService;
+    private final VideoService videoService;
 
-// ==========================================
-// Constructor
-// ==========================================
+    // Falls back to ./data/videos if the property isn't set,
+    // so a missing config value won't crash startup.
+    @Value("${video.storage.dir:./data/videos}")
+    private String videoStorageDir;
 
-public VideoController(VideoService videoService) {
-    this.videoService = videoService;
-}
+    // ==========================================
+    // Constructor
+    // ==========================================
 
-
-// ==========================================
-// Upload Video
-// ==========================================
-
-@PostMapping("/upload")
-public ResponseEntity<Video> uploadVideo(
-        @RequestParam("video") MultipartFile file,
-        @RequestParam("category") String category
-) throws Exception {
-
-    Video video =
-            videoService.uploadVideo(file, category);
-
-    // Don't return binary video data
-    video.setVideoData(null);
-
-    return ResponseEntity.ok(video);
-}
-
-
-// ==========================================
-// Get Video Metadata By Category
-// ==========================================
-
-@GetMapping("/category/{category}/list")
-public ResponseEntity<List<VideoMetadata>> getVideosByCategory(
-        @PathVariable String category
-) {
-
-    List<VideoMetadata> videos =
-            videoService.getVideosByCategory(category);
-
-    return ResponseEntity.ok(videos);
-}
-
-
-// ==========================================
-// Get / Play Actual Video By ID
-// ==========================================
-
-@GetMapping("/{id}")
-public ResponseEntity<byte[]> getVideo(
-        @PathVariable Long id
-) {
-
-    Video video =
-            videoService.getVideo(id);
-
-    String contentType =
-            video.getContentType();
-
-    if (contentType == null ||
-        contentType.isBlank()) {
-
-        contentType = "video/mp4";
+    public VideoController(VideoService videoService) {
+        this.videoService = videoService;
     }
 
-    return ResponseEntity
-            .ok()
-            .contentType(
-                MediaType.parseMediaType(
-                    contentType
+
+    // ==========================================
+    // Upload Video
+    // ==========================================
+
+    @PostMapping("/upload")
+    public ResponseEntity<Video> uploadVideo(
+            @RequestParam("video") MultipartFile file,
+            @RequestParam("category") String category
+    ) throws Exception {
+
+        Video video =
+                videoService.uploadVideo(file, category);
+
+        // No binary data on the entity anymore — nothing to null out.
+        // (storedFileName is safe to return; it's just a filename, not the bytes.)
+
+        return ResponseEntity.ok(video);
+    }
+
+
+    // ==========================================
+    // Get Video Metadata By Category
+    // ==========================================
+
+    @GetMapping("/category/{category}/list")
+    public ResponseEntity<List<VideoMetadata>> getVideosByCategory(
+            @PathVariable String category
+    ) {
+
+        List<VideoMetadata> videos =
+                videoService.getVideosByCategory(category);
+
+        return ResponseEntity.ok(videos);
+    }
+
+
+    // ==========================================
+    // Get / Play Actual Video By ID
+    // ==========================================
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Resource> getVideo(@PathVariable Long id) throws IOException {
+
+        Video meta = videoService.getVideo(id);
+
+        Path path = Paths.get(videoStorageDir, meta.getStoredFileName());
+
+        Resource resource = new UrlResource(path.toUri());
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(meta.getContentType()))
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "inline; filename=\"" + meta.getName() + "\""
                 )
-            )
-            .header(
-                HttpHeaders.CONTENT_DISPOSITION,
-                "inline; filename=\"" +
-                video.getName() +
-                "\""
-            )
-            .body(
-                video.getVideoData()
-            );
-}
+                .body(resource);
+    }
 
 
-// ==========================================
-// Delete Video
-// ==========================================
+    // ==========================================
+    // Delete Video
+    // ==========================================
 
-@DeleteMapping("/{id}")
-public ResponseEntity<String> deleteVideo(
-        @PathVariable Long id
-) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteVideo(
+            @PathVariable Long id
+    ) throws IOException {
 
-    videoService.deleteVideo(id);
+        videoService.deleteVideo(id);
 
-    return ResponseEntity.ok(
-        "Video deleted successfully"
-    );
-}
-
+        return ResponseEntity.ok(
+                "Video deleted successfully"
+        );
+    }
 
 }
-
-

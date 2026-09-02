@@ -1,72 +1,63 @@
 package com.example.beststore.models;
 
-import jakarta.persistence.Basic;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
-import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "videos")
 public class Video {
-	
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
-  private String name;
-  private String contentType;
-  private String category;//phone, Laptop, watch
-  
-  @Lob
-  @Basic(fetch = FetchType.LAZY)
-  @Column(name = "video_data" ,columnDefinition = "LONGBLOB")
-  private byte[] videoData;
-  
-  public Video() {}
 
-  public Long getId() {
-	return id;
-  }
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-  public void setId(Long id) {
-	this.id = id;
-  }
+    private String name;
+    private String contentType;
+    private String category;
+    private String storedFileName;
 
-  public String getName() {
-	return name;
-  }
+    // ==========================================
+    // Getters / Setters
+    // ==========================================
 
-  public void setName(String name) {
-	this.name = name;
-  }
+    public Long getId() {
+        return id;
+    }
 
-  public String getContentType() {
-	return contentType;
-  }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-  public void setContentType(String contentType) {
-	this.contentType = contentType;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public String getCategory() {
-	return category;
-  }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-  public void setCategory(String category) {
-	this.category = category;
-  }
+    public String getContentType() {
+        return contentType;
+    }
 
-  public byte[] getVideoData() {
-	return videoData;
-  }
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
 
-  public void setVideoData(byte[] videoData) {
-	this.videoData = videoData;
-  }
-  
-  
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getStoredFileName() {
+        return storedFileName;
+    }
+
+    public void setStoredFileName(String storedFileName) {
+        this.storedFileName = storedFileName;
+    }
 }
