@@ -8,7 +8,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.beststore.models.Video;
 import com.example.beststore.models.VideoMetadata;
-import com.example.beststore.repository.VideoMetadataProjection;
 import com.example.beststore.repository.VideoRepository;
 
 @Service
@@ -145,22 +144,9 @@ public class VideoService {
     // Get Video Metadata By Category
     // ==========================================
     public List<VideoMetadata> getVideosByCategory(String category) {
-
         String normalizedCategory = normalizeCategory(category);
 
-        List<VideoMetadataProjection> rows =
-                videoRepository.findVideoMetadataByCategory(
-                        normalizedCategory
-                );
-
-        return rows.stream()
-                .map(row -> new VideoMetadata(
-                        row.getId(),
-                        row.getName(),
-                        row.getContentType(),
-                        row.getCategory()
-                ))
-                .toList();
+        return videoRepository.findVideoMetadataByCategory(normalizedCategory);
     }
     
     // ==========================================
